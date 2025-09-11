@@ -1,0 +1,11 @@
+site_name: YU-GI-OH!
+
+theme:
+  name: material
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - md_in_html
