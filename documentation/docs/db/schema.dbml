@@ -1,0 +1,153 @@
+Project YuGiOh {
+  database_type: "PostgreSQL"
+  Note: "Modelo de dominio para torneos de Yu-Gi-Oh!"
+}
+
+//// =========================
+//// ENUMS
+//// =========================
+
+Enum AccountStatement {
+  Active
+  Inactive
+  Deleted
+}
+
+Enum AccountType {
+  Player
+  Sponsor
+}
+
+Enum RoundType {
+  Qualifying
+  Knockout
+}
+
+//// =========================
+//// ENTIDADES
+//// =========================
+
+Table Account {
+  Id                varchar [pk]
+  UserName          varchar
+  NormalizedUserName varchar
+  Email             varchar
+  NormalizedEmail   varchar
+  EmailConfirmed    boolean
+  PasswordHash      varchar
+  SecurityStamp     varchar
+  ConcurrencyStamp  varchar
+  PhoneNumber       varchar
+  PhoneNumberConfirmed boolean
+  TwoFactorEnabled  boolean
+  LockoutEnd        timestamp
+  LockoutEnabled    boolean
+  AccessFailedCount int
+
+  AddressId int [not null, ref: > Address.Id]
+  Type AccountType
+  Statement AccountStatement
+  CreatedAt timestamp
+
+  Note: "Hereda de IdentityUser (PK = string)"
+}
+
+Table Address {
+  Id int [pk, increment]
+  CountryId int [not null, ref: > Country.Id]
+  RegionId int [not null, ref: > Region.Id]
+  CityId int [not null, ref: > City.Id]
+  StreetTypeId int [default: 1, ref: > StreetType.Id]
+  StreetName varchar
+  BuildingName varchar
+  Apartment varchar
+}
+
+Table Country {
+  Id int [pk, increment]
+  Name varchar
+}
+
+Table Region {
+  Id int [pk, increment]
+  Name varchar
+}
+
+Table City {
+  Id int [pk, increment]
+  Name varchar
+}
+
+Table StreetType {
+  Id int [pk, increment]
+  Name varchar
+}
+
+Table Archetype {
+  Id int [pk, increment]
+  Name varchar
+  Description varchar
+}
+
+Table Deck {
+  Id int [pk, increment]
+  MainDeckSize int
+  SideDeckSize int
+  ExtraDeckSize int
+  OwnerId varchar [not null, ref: > Account.Id]
+  ArchetypeId int [not null, ref: > Archetype.Id]
+  CreatedAt timestamp
+}
+
+Table Tournament {
+  Id int [pk, increment]
+  Name varchar
+  AddressId int [not null, ref: > Address.Id]
+  StartDate timestamp
+  RegistrationLimit timestamp
+  CreatedAt timestamp
+}
+
+Table Round {
+  No int [pk]
+  Type RoundType
+  TournamentId int [not null, ref: > Tournament.Id]
+  CreatedAt timestamp
+}
+
+Table Match {
+  No int [pk]
+  RoundId int [not null, ref: > Round.No]
+  IsRunning boolean
+  IsFinished boolean
+  StartDate timestamp
+
+  WhitePlayerId varchar [not null, ref: > Account.Id]
+  WhitePlayerResult int
+
+  BlackPlayerId varchar [not null, ref: > Account.Id]
+  BlackPlayerResult int
+
+  CreatedAt timestamp
+}
+
+Table Registration {
+  Id int [pk, increment]
+  Accepted boolean
+  IsWinner boolean
+  IsPlaying boolean
+  Description varchar
+
+  DeckId int [not null, ref: > Deck.Id]
+  TournamentId int [not null, ref: > Tournament.Id]
+
+  CreatedAt timestamp
+}
+
+Table Sponsorship {
+  SponsorId varchar [ref: > Account.Id]
+  TournamentId int [ref: > Tournament.Id]
+  CreatedAt timestamp
+
+  Note: "Relación muchos a muchos entre Account (Sponsor) y Tournament"
+}
