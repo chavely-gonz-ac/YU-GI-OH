@@ -1,4 +1,4 @@
-using YuGiOh.Domain.Models.DTOs;
+/* src/Domain/Models/Address.cs */
 
 namespace YuGiOh.Domain.Models
 {
@@ -6,11 +6,8 @@ namespace YuGiOh.Domain.Models
     {
         public int Id { get; set; }
         public int CountryId { get; set; }
-        public Country Country { get; set; }
-        public int RegionId { get; set; }
-        public Region Region { get; set; }
+        public int StateId { get; set; }
         public int CityId { get; set; }
-        public City City { get; set; }
         public int StreetTypeId { get; set; }
         public StreetType StreetType { get; set; }
         public string StreetName { get; set; }
