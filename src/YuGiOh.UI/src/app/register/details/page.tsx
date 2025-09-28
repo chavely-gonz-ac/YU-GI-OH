@@ -133,7 +133,7 @@ const handleChange = (
           setCities([]);
         }
       }}
-      className="input"
+      className="input mt-2"
       value={form.address?.countryIso2 || ""}
     >
       <option value="">Select Country</option>
@@ -193,7 +193,7 @@ const handleChange = (
       onChange={async (e) => {
         handleChange(e);
       }}
-      className="input"
+      className="input mt-2"
       value={form.address?.streetTypeId || 0}
     >
       <option value="">Select Street Type</option>
