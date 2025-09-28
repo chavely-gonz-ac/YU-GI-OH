@@ -1,6 +1,6 @@
 /* src/Domain/ValueObjects/ConfirmRegistrationEmail.cs */
 
-using YuGiOh.Domain.Models.DTOs;
+using YuGiOh.Domain.DTOs;
 
 namespace YuGiOh.Domain.ValueObjects
 {

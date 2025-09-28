@@ -21,4 +21,8 @@
     <ProjectReference Include="..\YuGiOh.Application\YuGiOh.Application.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS* </NoWarn>
+  </PropertyGroup>
+
 </Project>

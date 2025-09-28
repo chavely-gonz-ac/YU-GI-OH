@@ -1,6 +1,6 @@
-using YuGiOh.Domain.Repositories;
+using YuGiOh.Domain.Services;
 using YuGiOh.Infrastructure.Persistence;
-using YuGiOh.Infrastructure.Identity.Repositories;
+using YuGiOh.Infrastructure.Identity.Services;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +25,7 @@ namespace YuGiOh.Infrastructure.Identity
                 .AddDefaultTokenProviders();
 
 
-            services.AddScoped<IUserRegistrationRepository, UserRegistrationRepository>();
+            services.AddScoped<IUserRegistrationHandler, UserRegistrationHandler>();
 
             return services;
         }

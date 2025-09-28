@@ -8,22 +8,57 @@
 /* eslint-disable */
 // ReSharper disable InconsistentNaming
 
-export class ApiClient {
-    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
-
-constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
-  this.http = http ? http : { fetch: globalThis.fetch.bind(globalThis) }; // safe in SSR + CSR
-  this.baseUrl = baseUrl ?? "";
-}
-
+export interface IApiClient {
 
     /**
      * @param body (optional) 
      * @return OK
      */
-    register(body: RegisterUserRequest | undefined): Promise<void> {
+    register(body?: RegisterUserRequest | undefined): Promise<void>;
+
+    /**
+     * @param email (optional) 
+     * @param token (optional) 
+     * @return OK
+     */
+    confirmEmail(email?: string | undefined, token?: string | undefined): Promise<void>;
+
+    /**
+     * @return OK
+     */
+    getCountries(): Promise<Country[]>;
+
+    /**
+     * @return OK
+     */
+    getStates(countryIso2: string): Promise<State[]>;
+
+    /**
+     * @return OK
+     */
+    getCities(countryIso2: string, stateIso2: string): Promise<City[]>;
+
+    /**
+     * @return OK
+     */
+    getStreetTypes(): Promise<StreetType[]>;
+}
+
+export class ApiClient implements IApiClient {
+    private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
+        this.http = http ? http : window as any;
+        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    register(body?: RegisterUserRequest | undefined, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/api/Auth/Register";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -32,6 +67,7 @@ constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestIni
         let options_: RequestInit = {
             body: content_,
             method: "POST",
+            signal,
             headers: {
                 "Content-Type": "application/json",
             }
@@ -62,7 +98,7 @@ constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestIni
      * @param token (optional) 
      * @return OK
      */
-    confirmEmail(email: string | undefined, token: string | undefined): Promise<void> {
+    confirmEmail(email?: string | undefined, token?: string | undefined, signal?: AbortSignal | undefined): Promise<void> {
         let url_ = this.baseUrl + "/api/Auth/ConfirmEmail?";
         if (email === null)
             throw new Error("The parameter 'email' cannot be null.");
@@ -76,6 +112,7 @@ constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestIni
 
         let options_: RequestInit = {
             method: "GET",
+            signal,
             headers: {
             }
         };
@@ -99,6 +136,432 @@ constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestIni
         }
         return Promise.resolve<void>(null as any);
     }
+
+    /**
+     * @return OK
+     */
+    getCountries(signal?: AbortSignal | undefined): Promise<Country[]> {
+        let url_ = this.baseUrl + "/api/CSC/GetCountries";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "text/plain"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCountries(_response);
+        });
+    }
+
+    protected processGetCountries(response: Response): Promise<Country[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(Country.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<Country[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getStates(countryIso2: string, signal?: AbortSignal | undefined): Promise<State[]> {
+        let url_ = this.baseUrl + "/api/CSC/GetStates/{countryIso2}";
+        if (countryIso2 === undefined || countryIso2 === null)
+            throw new Error("The parameter 'countryIso2' must be defined.");
+        url_ = url_.replace("{countryIso2}", encodeURIComponent("" + countryIso2));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "text/plain"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetStates(_response);
+        });
+    }
+
+    protected processGetStates(response: Response): Promise<State[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(State.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<State[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getCities(countryIso2: string, stateIso2: string, signal?: AbortSignal | undefined): Promise<City[]> {
+        let url_ = this.baseUrl + "/api/CSC/GetCities/{countryIso2}/{stateIso2}";
+        if (countryIso2 === undefined || countryIso2 === null)
+            throw new Error("The parameter 'countryIso2' must be defined.");
+        url_ = url_.replace("{countryIso2}", encodeURIComponent("" + countryIso2));
+        if (stateIso2 === undefined || stateIso2 === null)
+            throw new Error("The parameter 'stateIso2' must be defined.");
+        url_ = url_.replace("{stateIso2}", encodeURIComponent("" + stateIso2));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "text/plain"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetCities(_response);
+        });
+    }
+
+    protected processGetCities(response: Response): Promise<City[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(City.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<City[]>(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    getStreetTypes(signal?: AbortSignal | undefined): Promise<StreetType[]> {
+        let url_ = this.baseUrl + "/api/CSC/GetStreetTypes";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+                "Accept": "text/plain"
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processGetStreetTypes(_response);
+        });
+    }
+
+    protected processGetStreetTypes(response: Response): Promise<StreetType[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(StreetType.fromJS(item));
+            }
+            else {
+                result200 = <any>null;
+            }
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ProblemDetails.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<StreetType[]>(null as any);
+    }
+}
+
+export class Address implements IAddress {
+    id?: number;
+    countryIso2?: string | undefined;
+    stateIso2?: string | undefined;
+    cityIso2?: string | undefined;
+    streetTypeId?: number;
+    streetType?: StreetType;
+    streetName?: string | undefined;
+    buildingName?: string | undefined;
+    apartment?: string | undefined;
+
+    constructor(data?: IAddress) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["Id"];
+            this.countryIso2 = _data["CountryIso2"];
+            this.stateIso2 = _data["StateIso2"];
+            this.cityIso2 = _data["CityIso2"];
+            this.streetTypeId = _data["StreetTypeId"];
+            this.streetType = _data["StreetType"] ? StreetType.fromJS(_data["StreetType"]) : <any>undefined;
+            this.streetName = _data["StreetName"];
+            this.buildingName = _data["BuildingName"];
+            this.apartment = _data["Apartment"];
+        }
+    }
+
+    static fromJS(data: any): Address {
+        data = typeof data === 'object' ? data : {};
+        let result = new Address();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["Id"] = this.id;
+        data["CountryIso2"] = this.countryIso2;
+        data["StateIso2"] = this.stateIso2;
+        data["CityIso2"] = this.cityIso2;
+        data["StreetTypeId"] = this.streetTypeId;
+        data["StreetType"] = this.streetType ? this.streetType.toJSON() : <any>undefined;
+        data["StreetName"] = this.streetName;
+        data["BuildingName"] = this.buildingName;
+        data["Apartment"] = this.apartment;
+        return data;
+    }
+}
+
+export interface IAddress {
+    id?: number;
+    countryIso2?: string | undefined;
+    stateIso2?: string | undefined;
+    cityIso2?: string | undefined;
+    streetTypeId?: number;
+    streetType?: StreetType;
+    streetName?: string | undefined;
+    buildingName?: string | undefined;
+    apartment?: string | undefined;
+}
+
+export class City implements ICity {
+    name?: string | undefined;
+    stateIso2?: string | undefined;
+    countryIso2?: string | undefined;
+
+    constructor(data?: ICity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["Name"];
+            this.stateIso2 = _data["StateIso2"];
+            this.countryIso2 = _data["CountryIso2"];
+        }
+    }
+
+    static fromJS(data: any): City {
+        data = typeof data === 'object' ? data : {};
+        let result = new City();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["Name"] = this.name;
+        data["StateIso2"] = this.stateIso2;
+        data["CountryIso2"] = this.countryIso2;
+        return data;
+    }
+}
+
+export interface ICity {
+    name?: string | undefined;
+    stateIso2?: string | undefined;
+    countryIso2?: string | undefined;
+}
+
+export class Country implements ICountry {
+    iso2?: string | undefined;
+    name?: string | undefined;
+
+    constructor(data?: ICountry) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.iso2 = _data["Iso2"];
+            this.name = _data["Name"];
+        }
+    }
+
+    static fromJS(data: any): Country {
+        data = typeof data === 'object' ? data : {};
+        let result = new Country();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["Iso2"] = this.iso2;
+        data["Name"] = this.name;
+        return data;
+    }
+}
+
+export interface ICountry {
+    iso2?: string | undefined;
+    name?: string | undefined;
+}
+
+export class ProblemDetails implements IProblemDetails {
+    type?: string | undefined;
+    title?: string | undefined;
+    status?: number | undefined;
+    detail?: string | undefined;
+    instance?: string | undefined;
+
+    [key: string]: any;
+
+    constructor(data?: IProblemDetails) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            for (var property in _data) {
+                if (_data.hasOwnProperty(property))
+                    this[property] = _data[property];
+            }
+            this.type = _data["type"];
+            this.title = _data["title"];
+            this.status = _data["status"];
+            this.detail = _data["detail"];
+            this.instance = _data["instance"];
+        }
+    }
+
+    static fromJS(data: any): ProblemDetails {
+        data = typeof data === 'object' ? data : {};
+        let result = new ProblemDetails();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        for (var property in this) {
+            if (this.hasOwnProperty(property))
+                data[property] = this[property];
+        }
+        data["type"] = this.type;
+        data["title"] = this.title;
+        data["status"] = this.status;
+        data["detail"] = this.detail;
+        data["instance"] = this.instance;
+        return data;
+    }
+}
+
+export interface IProblemDetails {
+    type?: string | undefined;
+    title?: string | undefined;
+    status?: number | undefined;
+    detail?: string | undefined;
+    instance?: string | undefined;
+
+    [key: string]: any;
 }
 
 export class RegisterUserRequest implements IRegisterUserRequest {
@@ -110,13 +573,7 @@ export class RegisterUserRequest implements IRegisterUserRequest {
     secondSurname?: string | undefined;
     readonly fullName?: string | undefined;
     roles?: string[] | undefined;
-    country?: number | undefined;
-    region?: number | undefined;
-    city?: number | undefined;
-    streetType?: number | undefined;
-    streetName?: string | undefined;
-    building?: string | undefined;
-    apartment?: string | undefined;
+    address?: Address;
     iBAN?: string | undefined;
 
     constructor(data?: IRegisterUserRequest) {
@@ -142,13 +599,7 @@ export class RegisterUserRequest implements IRegisterUserRequest {
                 for (let item of _data["Roles"])
                     this.roles!.push(item);
             }
-            this.country = _data["Country"];
-            this.region = _data["Region"];
-            this.city = _data["City"];
-            this.streetType = _data["StreetType"];
-            this.streetName = _data["StreetName"];
-            this.building = _data["Building"];
-            this.apartment = _data["Apartment"];
+            this.address = _data["Address"] ? Address.fromJS(_data["Address"]) : <any>undefined;
             this.iBAN = _data["IBAN"];
         }
     }
@@ -174,13 +625,7 @@ export class RegisterUserRequest implements IRegisterUserRequest {
             for (let item of this.roles)
                 data["Roles"].push(item);
         }
-        data["Country"] = this.country;
-        data["Region"] = this.region;
-        data["City"] = this.city;
-        data["StreetType"] = this.streetType;
-        data["StreetName"] = this.streetName;
-        data["Building"] = this.building;
-        data["Apartment"] = this.apartment;
+        data["Address"] = this.address ? this.address.toJSON() : <any>undefined;
         data["IBAN"] = this.iBAN;
         return data;
     }
@@ -195,18 +640,96 @@ export interface IRegisterUserRequest {
     secondSurname?: string | undefined;
     fullName?: string | undefined;
     roles?: string[] | undefined;
-    country?: number | undefined;
-    region?: number | undefined;
-    city?: number | undefined;
-    streetType?: number | undefined;
-    streetName?: string | undefined;
-    building?: string | undefined;
-    apartment?: string | undefined;
+    address?: Address;
     iBAN?: string | undefined;
 }
 
-export class ApiException extends Error {
-    message: string;
+export class State implements IState {
+    iso2?: string | undefined;
+    name?: string | undefined;
+    countryIso2?: string | undefined;
+
+    constructor(data?: IState) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.iso2 = _data["Iso2"];
+            this.name = _data["Name"];
+            this.countryIso2 = _data["CountryIso2"];
+        }
+    }
+
+    static fromJS(data: any): State {
+        data = typeof data === 'object' ? data : {};
+        let result = new State();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["Iso2"] = this.iso2;
+        data["Name"] = this.name;
+        data["CountryIso2"] = this.countryIso2;
+        return data;
+    }
+}
+
+export interface IState {
+    iso2?: string | undefined;
+    name?: string | undefined;
+    countryIso2?: string | undefined;
+}
+
+export class StreetType implements IStreetType {
+    id?: number;
+    name?: string | undefined;
+
+    constructor(data?: IStreetType) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["Id"];
+            this.name = _data["Name"];
+        }
+    }
+
+    static fromJS(data: any): StreetType {
+        data = typeof data === 'object' ? data : {};
+        let result = new StreetType();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["Id"] = this.id;
+        data["Name"] = this.name;
+        return data;
+    }
+}
+
+export interface IStreetType {
+    id?: number;
+    name?: string | undefined;
+}
+
+export class SwaggerException extends Error {
+    override message: string;
     status: number;
     response: string;
     headers: { [key: string]: any; };
@@ -222,16 +745,13 @@ export class ApiException extends Error {
         this.result = result;
     }
 
-    protected isApiException = true;
+    protected isSwaggerException = true;
 
-    static isApiException(obj: any): obj is ApiException {
-        return obj.isApiException === true;
+    static isSwaggerException(obj: any): obj is SwaggerException {
+        return obj.isSwaggerException === true;
     }
 }
 
 function throwException(message: string, status: number, response: string, headers: { [key: string]: any; }, result?: any): any {
-    if (result !== null && result !== undefined)
-        throw result;
-    else
-        throw new ApiException(message, status, response, headers, null);
+    throw new SwaggerException(message, status, response, headers, result);
 }

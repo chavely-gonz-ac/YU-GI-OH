@@ -1,6 +1,6 @@
 namespace YuGiOh.Infrastructure.EmailService
 {
-    public class SMTPSettings
+    public class SMTPOptions
 
     {
         public string Server { get; set; }

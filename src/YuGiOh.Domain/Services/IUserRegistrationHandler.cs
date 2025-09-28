@@ -2,15 +2,15 @@
 
 using System.Threading.Tasks;
 
-using YuGiOh.Domain.Models.DTOs;
+using YuGiOh.Domain.DTOs;
 
-namespace YuGiOh.Domain.Repositories
+namespace YuGiOh.Domain.Services
 {
     /// <summary>
     /// Defines the contract for user registration and email confirmation.
     /// The concrete implementation will use Identity Framework and email services.
     /// </summary>
-    public interface IUserRegistrationRepository
+    public interface IUserRegistrationHandler
     {
         /// <summary>
         /// Creates a new user account in the system based on the registration request.

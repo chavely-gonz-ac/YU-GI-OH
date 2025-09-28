@@ -1,6 +1,8 @@
-/* src/Domain/Models/DTOs/RegisterUserRequest.cs */
+/* src/Domain/DTOs/RegisterUserRequest.cs */
 
-namespace YuGiOh.Domain.Models.DTOs
+using YuGiOh.Domain.Models;
+
+namespace YuGiOh.Domain.DTOs
 {
     public class RegisterUserRequest
     {

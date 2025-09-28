@@ -1,5 +1,5 @@
+using YuGiOh.Domain.DTOs;
 using YuGiOh.Domain.Models;
-using YuGiOh.Domain.Models.DTOs;
 using YuGiOh.Infrastructure.Identity;
 
 using Microsoft.EntityFrameworkCore;

@@ -1,5 +1,5 @@
-using YuGiOh.Domain.Models.DTOs;
-using YuGiOh.Domain.Repositories;
+using YuGiOh.Domain.DTOs;
+using YuGiOh.Domain.Services;
 
 using MimeKit;
 using MailKit.Net.Smtp;
@@ -13,22 +13,22 @@ namespace YuGiOh.Infrastructure.EmailService
     /// </summary>
     public class EmailSender : IEmailSender
     {
-        private readonly SMTPSettings _smtpSettings;
+        private readonly SMTPOptions _smtpOptions;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="EmailSender"/> class.
         /// </summary>
         /// <param name="settings">The SMTP settings injected from configuration.</param>
-        public EmailSender(IOptions<SMTPSettings> settings)
+        public EmailSender(IOptions<SMTPOptions> options)
         {
-            _smtpSettings = settings.Value;
+            _smtpOptions = options.Value;
         }
 
         /// <inheritdoc/>
         public async Task SendMailAsync(Email emailData)
         {
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress(_smtpSettings.FromDisplayName, _smtpSettings.Username));
+            email.From.Add(new MailboxAddress(_smtpOptions.FromDisplayName, _smtpOptions.Username));
             email.To.Add(MailboxAddress.Parse(emailData.ToAddress));
             email.Subject = emailData.Subject;
 
@@ -51,8 +51,8 @@ namespace YuGiOh.Infrastructure.EmailService
             }
 
             using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(_smtpSettings.Server, _smtpSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(_smtpSettings.FromAddress, _smtpSettings.Password); 
+            await smtp.ConnectAsync(_smtpOptions.Server, _smtpOptions.Port, MailKit.Security.SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(_smtpOptions.FromAddress, _smtpOptions.Password); 
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
         }

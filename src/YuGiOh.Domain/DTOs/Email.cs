@@ -1,6 +1,6 @@
-/* src/Domain/Models/DTOs/Email.cs */
+/* src/Domain/DTOs/Email.cs */
 
-namespace YuGiOh.Domain.Models.DTOs
+namespace YuGiOh.Domain.DTOs
 {
     public class Email
     {

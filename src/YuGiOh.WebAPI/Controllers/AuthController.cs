@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 using YuGiOh.Application.Features.Auth.Queries;
 using YuGiOh.Application.Features.Auth.Commands;
-using YuGiOh.Domain.Models.DTOs;
+using YuGiOh.Domain.DTOs;
 
 namespace YuGiOh.WebAPI.Controllers
 {
@@ -42,7 +42,6 @@ namespace YuGiOh.WebAPI.Controllers
                     Email = request.Email,
                     CallbackURL = callbackUrl!
                 });
-            Console.WriteLine("I am here.");
 
                 return Ok(new { Message = "Registration successful. Please confirm your email." });
             }

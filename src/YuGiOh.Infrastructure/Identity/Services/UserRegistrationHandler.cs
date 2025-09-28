@@ -1,44 +1,48 @@
 using Ardalis.Specification;
 
-using YuGiOh.Domain.Models;
-using YuGiOh.Domain.Models.DTOs;
-using YuGiOh.Domain.Repositories;
-
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace YuGiOh.Infrastructure.Identity.Repositories
+using YuGiOh.Domain.DTOs;
+using YuGiOh.Domain.Models;
+using YuGiOh.Domain.Services;
+using YuGiOh.Infrastructure.Identity;
+using YuGiOh.Infrastructure.Persistence;
+
+
+namespace YuGiOh.Infrastructure.Identity.Services
 {
-    public class UserRegistrationRepository : IUserRegistrationRepository
+    public class UserRegistrationHandler : IUserRegistrationHandler
     {
         #region constructor
-        // private readonly IEmailSender _emailSender;
+        private readonly YuGiOhDbContext _dbContext;
         private readonly UserManager<Account> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IRepositoryBase<Player> _playerRepository;
         private readonly IRepositoryBase<Sponsor> _sponsorRepository;
         private readonly IRepositoryBase<Address> _addressRepository;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<UserRegistrationRepository> _logger;
+        private readonly ILogger<UserRegistrationHandler> _logger;
 
-        public UserRegistrationRepository(
-            // IEmailSender emailSender,
+        public UserRegistrationHandler(
+            YuGiOhDbContext dbContext,
             UserManager<Account> userManager,
             RoleManager<IdentityRole> roleManager,
             IRepositoryBase<Player> playerRepository,
             IRepositoryBase<Sponsor> sponsorRepository,
             IRepositoryBase<Address> addressRepository,
             IConfiguration configuration,
-            ILogger<UserRegistrationRepository> logger)
+            ILogger<UserRegistrationHandler> logger)
         {
-            // _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
-            _playerRepository = playerRepository;
-            _sponsorRepository = sponsorRepository;
-            _addressRepository = addressRepository;
+            _playerRepository = playerRepository ?? throw new ArgumentNullException(nameof(playerRepository));
+            _sponsorRepository = sponsorRepository ?? throw new ArgumentNullException(nameof(sponsorRepository));
+            _addressRepository = addressRepository ?? throw new ArgumentNullException(nameof(addressRepository));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -47,17 +51,15 @@ namespace YuGiOh.Infrastructure.Identity.Repositories
         #region register
         public async Task<string> RegisterAsync(RegisterUserRequest request)
         {
-            Console.WriteLine("I am in repository.");
             if (request == null) throw new ArgumentNullException(nameof(request));
 
             Account? account = null;
 
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-            Console.WriteLine("I am in repository.");
                 // Create account
                 account = await this.CreateAccountAsync(request);
-            Console.WriteLine("I am in repository.");
 
                 // Add roles
                 if (request.Roles != null && request.Roles.Any())
@@ -72,26 +74,15 @@ namespace YuGiOh.Infrastructure.Identity.Repositories
                 // Create related entities
                 await this.CreateRelatedEntitiesAsync(account, request);
 
-                // Generate confirmation token
+                // Commit transaction if everything is OK
+                await transaction.CommitAsync();
+
                 return await _userManager.GenerateEmailConfirmationTokenAsync(account);
             }
             catch (Exception ex)
             {
-                // Rollback user if created but other steps failed
-                if (account != null)
-                {
-                    var rollbackResult = await _userManager.DeleteAsync(account);
-                    if (!rollbackResult.Succeeded)
-                    {
-                        _logger.LogError("Rollback failed for user {Email}. Errors: {Errors}",
-                            account.Email,
-                            string.Join("; ", rollbackResult.Errors.Select(e => e.Description)));
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Rollback succeeded. User {Email} was deleted.", account.Email);
-                    }
-                }
+                await transaction.RollbackAsync();
+                // Delete related entities.
 
                 _logger.LogError(ex, "User registration failed for email {Email}", request.Email);
                 throw;
@@ -128,7 +119,6 @@ namespace YuGiOh.Infrastructure.Identity.Repositories
                 _logger.LogWarning("Failed to create account {Email}: {Errors}", request.Email, errors);
                 throw new InvalidOperationException($"Could not create account: {errors}");
             }
-            Console.WriteLine("I am in repository create account.");
 
             return account;
         }
@@ -157,7 +147,6 @@ namespace YuGiOh.Infrastructure.Identity.Repositories
                     throw new InvalidOperationException("Not all roles could be assigned to the user.");
                 }
             }
-            Console.WriteLine("I am in repository add roles.");
         }
 
         private async Task CreateRelatedEntitiesAsync(Account account, RegisterUserRequest request)
@@ -169,11 +158,12 @@ namespace YuGiOh.Infrastructure.Identity.Repositories
                 await this.CreateSponsorAsync(account, request);
 
             if (!request.Roles.Contains("Player") && !request.Roles.Contains("Sponsor"))
-                throw new InvalidOperationException("No valid role recognized for related entity creation.");
+                throw new InvalidOperationException("No valid role recognized.");
         }
 
         private async Task CreatePlayerAsync(Account account, RegisterUserRequest request)
         {
+            if (request.Address == null) throw new ArgumentNullException(nameof(request.Address));
             var address = request.Address;
             await _addressRepository.AddAsync(address);
 
@@ -187,6 +177,7 @@ namespace YuGiOh.Infrastructure.Identity.Repositories
 
         private async Task CreateSponsorAsync(Account account, RegisterUserRequest request)
         {
+            if (request.IBAN == null) throw new ArgumentNullException(nameof(request.IBAN));
             var sponsor = new Sponsor()
             {
                 Id = account.Id,

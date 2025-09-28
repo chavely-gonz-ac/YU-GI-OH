@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using YuGiOh.Infrastructure.Identity;
 using YuGiOh.Infrastructure.Persistence;
 using YuGiOh.Infrastructure.EmailService;
+using YuGiOh.Infrastructure.CachingService;
+using YuGiOh.Infrastructure.CSCService;
 
 namespace YuGiOh.Infrastructure
 {
@@ -14,6 +16,8 @@ namespace YuGiOh.Infrastructure
             services.AddPersistence(configuration);
             services.AddIdentity();
             services.AddEmailService(configuration);
+            services.AddCachingService(configuration);
+            services.AddCSCService(configuration);
 
             return services;
         }

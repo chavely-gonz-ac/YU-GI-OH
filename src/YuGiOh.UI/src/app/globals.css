@@ -90,11 +90,16 @@ body {
   text-align: center;
 }
 
-.mb-6 {
-  margin-bottom: 1.5rem;
+.text-yugiviolet {
+  color: var(--color-yugiviolet);
 }
 
-/* Form spacing */
+.mb-6 {
+  margin-bottom: 1.5rem;
+}/* Form spacing */
+.space-y-2>*+* {
+  margin-top: .5rem;
+}/* Form spacing */
 .space-y-4>*+* {
   margin-top: 1rem;
 }
@@ -156,6 +161,9 @@ input:focus {
 
 .text-gray-700 {
   color: #374151;
+}
+.text-red {
+  color: red;
 }
 
 /* Gradient background for the page */

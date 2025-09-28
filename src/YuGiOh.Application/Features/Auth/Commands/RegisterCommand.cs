@@ -1,7 +1,7 @@
 using MediatR;
 
-using YuGiOh.Domain.Models.DTOs;
-using YuGiOh.Domain.Repositories;
+using YuGiOh.Domain.DTOs;
+using YuGiOh.Domain.Services;
 
 namespace YuGiOh.Application.Features.Auth.Commands
 {
@@ -14,20 +14,20 @@ namespace YuGiOh.Application.Features.Auth.Commands
     // The handler
     public class RegisterCommandHandler : IRequestHandler<RegisterCommand, string>
     {
-        private readonly IUserRegistrationRepository _userRegistrationRepository;
+        private readonly IUserRegistrationHandler _userRegistrationHandler;
 
-        public RegisterCommandHandler(IUserRegistrationRepository userRegistrationRepository)
+        public RegisterCommandHandler(IUserRegistrationHandler userRegistrationHandler)
         {
-            _userRegistrationRepository = userRegistrationRepository;
+            _userRegistrationHandler = userRegistrationHandler;
         }
 
         public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
-            Console.WriteLine("I am in command.");
             var registerUser = request.Data;
 
             // This will return the confirmation token
-            return await _userRegistrationRepository.RegisterAsync(registerUser);
+            return await _userRegistrationHandler.RegisterAsync(registerUser);
+            
         }
     }
 }

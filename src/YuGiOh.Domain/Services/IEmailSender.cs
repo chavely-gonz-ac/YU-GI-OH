@@ -1,6 +1,6 @@
-using YuGiOh.Domain.Models.DTOs;
+using YuGiOh.Domain.DTOs;
 
-namespace YuGiOh.Domain.Repositories
+namespace YuGiOh.Domain.Services
 {
     /// <summary>
     ///     Defines the contract for sending emails.

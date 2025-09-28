@@ -1,6 +1,6 @@
 using FluentValidation;
 
-using YuGiOh.Domain.Models.DTOs;
+using YuGiOh.Domain.DTOs;
 using YuGiOh.Application.Features.Auth.Commands;
 
 namespace YuGiOh.Application.Features.Auth.Validators

@@ -1,5 +1,5 @@
+using YuGiOh.Domain.DTOs;
 using YuGiOh.Domain.Models;
-using YuGiOh.Domain.Models.DTOs;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -27,13 +27,13 @@ namespace YuGiOh.Infrastructure.Persistence.Configurations
                    .HasMaxLength(50)
                    .IsRequired(false);
 
-            builder.Property(a => a.CountryId)
+            builder.Property(a => a.CountryIso2)
                    .IsRequired();
 
-            builder.Property(a => a.StateId)
+            builder.Property(a => a.StateIso2)
                    .IsRequired();
 
-            builder.Property(a => a.CityId)
+            builder.Property(a => a.CityIso2)
                    .IsRequired();
 
             builder.HasOne(a => a.StreetType)

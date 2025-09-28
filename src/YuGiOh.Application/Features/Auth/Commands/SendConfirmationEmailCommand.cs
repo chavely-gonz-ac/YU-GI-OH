@@ -1,8 +1,8 @@
 using MediatR;
 
-using YuGiOh.Domain.Models.DTOs;
+using YuGiOh.Domain.DTOs;
 using YuGiOh.Domain.ValueObjects;
-using YuGiOh.Domain.Repositories;
+using YuGiOh.Domain.Services;
 
 namespace YuGiOh.Application.Features.Auth.Commands
 {

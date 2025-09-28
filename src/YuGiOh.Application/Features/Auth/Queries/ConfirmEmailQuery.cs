@@ -1,6 +1,6 @@
 using MediatR;
 
-using YuGiOh.Domain.Repositories;
+using YuGiOh.Domain.Services;
 
 namespace YuGiOh.Application.Features.Auth.Queries
 {
@@ -18,17 +18,17 @@ namespace YuGiOh.Application.Features.Auth.Queries
     /// </summary>
     public class ConfirmEmailQueryHandler : IRequestHandler<ConfirmEmailQuery, bool>
     {
-        private readonly IUserRegistrationRepository _userRegistrationRepository;
+        private readonly IUserRegistrationHandler _userRegistrationHandler;
 
-        public ConfirmEmailQueryHandler(IUserRegistrationRepository userRegistrationRepository)
+        public ConfirmEmailQueryHandler(IUserRegistrationHandler userRegistrationHandler)
         {
-            _userRegistrationRepository = userRegistrationRepository 
-                ?? throw new ArgumentNullException(nameof(userRegistrationRepository));
+            _userRegistrationHandler = userRegistrationHandler 
+                ?? throw new ArgumentNullException(nameof(userRegistrationHandler));
         }
 
         public async Task<bool> Handle(ConfirmEmailQuery request, CancellationToken cancellationToken)
         {
-            return await _userRegistrationRepository.ConfirmEmailAsync(request.Email, request.Token);
+            return await _userRegistrationHandler.ConfirmEmailAsync(request.Email, request.Token);
         }
     }
 }
