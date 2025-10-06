@@ -15,7 +15,7 @@ using YuGiOh.Infrastructure.Persistence;
 
 namespace YuGiOh.Infrastructure.Identity.Services
 {
-    public class UserRegistrationHandler : IUserRegistrationHandler
+    public class RegisterHandler : IRegisterHandler
     {
         #region constructor
         private readonly YuGiOhDbContext _dbContext;
@@ -25,9 +25,9 @@ namespace YuGiOh.Infrastructure.Identity.Services
         private readonly IRepositoryBase<Sponsor> _sponsorRepository;
         private readonly IRepositoryBase<Address> _addressRepository;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<UserRegistrationHandler> _logger;
+        private readonly ILogger<RegisterHandler> _logger;
 
-        public UserRegistrationHandler(
+        public RegisterHandler(
             YuGiOhDbContext dbContext,
             UserManager<Account> userManager,
             RoleManager<IdentityRole> roleManager,
@@ -35,7 +35,7 @@ namespace YuGiOh.Infrastructure.Identity.Services
             IRepositoryBase<Sponsor> sponsorRepository,
             IRepositoryBase<Address> addressRepository,
             IConfiguration configuration,
-            ILogger<UserRegistrationHandler> logger)
+            ILogger<RegisterHandler> logger)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));

@@ -14,7 +14,7 @@ namespace YuGiOh.Infrastructure
         public static IServiceCollection AddInfrastructureLayer(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddPersistence(configuration);
-            services.AddIdentity();
+            services.AddIdentity(configuration);
             services.AddEmailService(configuration);
             services.AddCachingService(configuration);
             services.AddCSCService(configuration);

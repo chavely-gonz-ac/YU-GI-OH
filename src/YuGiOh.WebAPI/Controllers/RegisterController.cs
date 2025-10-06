@@ -7,10 +7,10 @@ using YuGiOh.Domain.DTOs;
 
 namespace YuGiOh.WebAPI.Controllers
 {
-    public class AuthController : APIControllerBase
+    public class RegisterController : APIControllerBase
     {
 
-        public AuthController(IMediator mediator) : base(mediator) { }
+        public RegisterController(IMediator mediator) : base(mediator) { }
 
         /// <summary>
         /// Registers a new user (Player or Sponsor).
@@ -31,7 +31,7 @@ namespace YuGiOh.WebAPI.Controllers
                 // Build confirmation callback URL
                 var callbackUrl = Url.Action(
                     nameof(ConfirmEmail),
-                    "Auth",
+                    "Register",
                     new { email = request.Email, token },
                     Request.Scheme);
             Console.WriteLine("I am here.");

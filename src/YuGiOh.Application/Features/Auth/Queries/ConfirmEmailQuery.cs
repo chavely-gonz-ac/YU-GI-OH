@@ -18,17 +18,17 @@ namespace YuGiOh.Application.Features.Auth.Queries
     /// </summary>
     public class ConfirmEmailQueryHandler : IRequestHandler<ConfirmEmailQuery, bool>
     {
-        private readonly IUserRegistrationHandler _userRegistrationHandler;
+        private readonly IRegisterHandler _registerHandler;
 
-        public ConfirmEmailQueryHandler(IUserRegistrationHandler userRegistrationHandler)
+        public ConfirmEmailQueryHandler(IRegisterHandler registerHandler)
         {
-            _userRegistrationHandler = userRegistrationHandler 
-                ?? throw new ArgumentNullException(nameof(userRegistrationHandler));
+            _registerHandler = registerHandler 
+                ?? throw new ArgumentNullException(nameof(registerHandler));
         }
 
         public async Task<bool> Handle(ConfirmEmailQuery request, CancellationToken cancellationToken)
         {
-            return await _userRegistrationHandler.ConfirmEmailAsync(request.Email, request.Token);
+            return await _registerHandler.ConfirmEmailAsync(request.Email, request.Token);
         }
     }
 }

@@ -14,11 +14,12 @@ namespace YuGiOh.Application.Features.Auth.Commands
     // The handler
     public class RegisterCommandHandler : IRequestHandler<RegisterCommand, string>
     {
-        private readonly IUserRegistrationHandler _userRegistrationHandler;
+        private readonly IRegisterHandler _registerHandler;
 
-        public RegisterCommandHandler(IUserRegistrationHandler userRegistrationHandler)
+        public RegisterCommandHandler(IRegisterHandler registerHandler)
         {
-            _userRegistrationHandler = userRegistrationHandler;
+            _registerHandler = registerHandler 
+                ?? throw new ArgumentNullException(nameof(registerHandler));
         }
 
         public async Task<string> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -26,7 +27,7 @@ namespace YuGiOh.Application.Features.Auth.Commands
             var registerUser = request.Data;
 
             // This will return the confirmation token
-            return await _userRegistrationHandler.RegisterAsync(registerUser);
+            return await _registerHandler.RegisterAsync(registerUser);
             
         }
     }

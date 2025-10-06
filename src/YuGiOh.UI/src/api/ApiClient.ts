@@ -14,14 +14,12 @@ export interface IApiClient {
      * @param body (optional) 
      * @return OK
      */
-    register(body?: RegisterUserRequest | undefined): Promise<void>;
+    login(body?: AuthenticateCommand | undefined): Promise<void>;
 
     /**
-     * @param email (optional) 
-     * @param token (optional) 
      * @return OK
      */
-    confirmEmail(email?: string | undefined, token?: string | undefined): Promise<void>;
+    refresh(): Promise<void>;
 
     /**
      * @return OK
@@ -42,6 +40,19 @@ export interface IApiClient {
      * @return OK
      */
     getStreetTypes(): Promise<StreetType[]>;
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    register(body?: RegisterUserRequest | undefined): Promise<void>;
+
+    /**
+     * @param email (optional) 
+     * @param token (optional) 
+     * @return OK
+     */
+    confirmEmail(email?: string | undefined, token?: string | undefined): Promise<void>;
 }
 
 export class ApiClient implements IApiClient {
@@ -49,17 +60,20 @@ export class ApiClient implements IApiClient {
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
 
-    constructor(baseUrl?: string, http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }) {
-        this.http = http ? http : window as any;
-        this.baseUrl = baseUrl !== undefined && baseUrl !== null ? baseUrl : "";
-    }
+constructor(
+  baseUrl?: string,
+  http?: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> }
+) {
+  this.http = http ?? { fetch: (url, init) => globalThis.fetch(url, init) };
+  this.baseUrl = baseUrl ?? "";
+}
 
     /**
      * @param body (optional) 
      * @return OK
      */
-    register(body?: RegisterUserRequest | undefined, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/api/Auth/Register";
+    login(body?: AuthenticateCommand | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/Authentication/login";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(body);
@@ -74,11 +88,11 @@ export class ApiClient implements IApiClient {
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processRegister(_response);
+            return this.processLogin(_response);
         });
     }
 
-    protected processRegister(response: Response): Promise<void> {
+    protected processLogin(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -94,35 +108,25 @@ export class ApiClient implements IApiClient {
     }
 
     /**
-     * @param email (optional) 
-     * @param token (optional) 
      * @return OK
      */
-    confirmEmail(email?: string | undefined, token?: string | undefined, signal?: AbortSignal | undefined): Promise<void> {
-        let url_ = this.baseUrl + "/api/Auth/ConfirmEmail?";
-        if (email === null)
-            throw new Error("The parameter 'email' cannot be null.");
-        else if (email !== undefined)
-            url_ += "email=" + encodeURIComponent("" + email) + "&";
-        if (token === null)
-            throw new Error("The parameter 'token' cannot be null.");
-        else if (token !== undefined)
-            url_ += "token=" + encodeURIComponent("" + token) + "&";
+    refresh(signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/Authentication/refresh";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_: RequestInit = {
-            method: "GET",
+            method: "POST",
             signal,
             headers: {
             }
         };
 
         return this.http.fetch(url_, options_).then((_response: Response) => {
-            return this.processConfirmEmail(_response);
+            return this.processRefresh(_response);
         });
     }
 
-    protected processConfirmEmail(response: Response): Promise<void> {
+    protected processRefresh(response: Response): Promise<void> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -346,6 +350,89 @@ export class ApiClient implements IApiClient {
         }
         return Promise.resolve<StreetType[]>(null as any);
     }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    register(body?: RegisterUserRequest | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/Register/Register";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_: RequestInit = {
+            body: content_,
+            method: "POST",
+            signal,
+            headers: {
+                "Content-Type": "application/json",
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processRegister(_response);
+        });
+    }
+
+    protected processRegister(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
+
+    /**
+     * @param email (optional) 
+     * @param token (optional) 
+     * @return OK
+     */
+    confirmEmail(email?: string | undefined, token?: string | undefined, signal?: AbortSignal | undefined): Promise<void> {
+        let url_ = this.baseUrl + "/api/Register/ConfirmEmail?";
+        if (email === null)
+            throw new Error("The parameter 'email' cannot be null.");
+        else if (email !== undefined)
+            url_ += "email=" + encodeURIComponent("" + email) + "&";
+        if (token === null)
+            throw new Error("The parameter 'token' cannot be null.");
+        else if (token !== undefined)
+            url_ += "token=" + encodeURIComponent("" + token) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_: RequestInit = {
+            method: "GET",
+            signal,
+            headers: {
+            }
+        };
+
+        return this.http.fetch(url_, options_).then((_response: Response) => {
+            return this.processConfirmEmail(_response);
+        });
+    }
+
+    protected processConfirmEmail(response: Response): Promise<void> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            return;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<void>(null as any);
+    }
 }
 
 export class Address implements IAddress {
@@ -414,6 +501,50 @@ export interface IAddress {
     streetName?: string | undefined;
     buildingName?: string | undefined;
     apartment?: string | undefined;
+}
+
+export class AuthenticateCommand implements IAuthenticateCommand {
+    handler?: string | undefined;
+    password?: string | undefined;
+    ipAddress?: string | undefined;
+
+    constructor(data?: IAuthenticateCommand) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.handler = _data["Handler"];
+            this.password = _data["Password"];
+            this.ipAddress = _data["IpAddress"];
+        }
+    }
+
+    static fromJS(data: any): AuthenticateCommand {
+        data = typeof data === 'object' ? data : {};
+        let result = new AuthenticateCommand();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["Handler"] = this.handler;
+        data["Password"] = this.password;
+        data["IpAddress"] = this.ipAddress;
+        return data;
+    }
+}
+
+export interface IAuthenticateCommand {
+    handler?: string | undefined;
+    password?: string | undefined;
+    ipAddress?: string | undefined;
 }
 
 export class City implements ICity {

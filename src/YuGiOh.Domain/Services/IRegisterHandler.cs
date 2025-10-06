@@ -10,7 +10,7 @@ namespace YuGiOh.Domain.Services
     /// Defines the contract for user registration and email confirmation.
     /// The concrete implementation will use Identity Framework and email services.
     /// </summary>
-    public interface IUserRegistrationHandler
+    public interface IRegisterHandler
     {
         /// <summary>
         /// Creates a new user account in the system based on the registration request.
