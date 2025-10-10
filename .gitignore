@@ -6,3 +6,6 @@ obj
 *.Development.json
 *.temporal.txt
 *.sh
+
+# depreciated documents
+old_versions
